@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<project name="Raspberry Pi Java Web Server" default="targets">
+   <taskdef resource="cpptasks.tasks"/>
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+   <property name="src.dir" value="src"/>
+   <property name="lib.dir" value="lib"/>
+   <property name="port.num" value="8080"/>
+   <property name="server.host" value="localhost"/>
+   <property name="classes.dir" value="classes"/>
+
+   <property environment="env"/>
+   <property name="ostype" value="${env.OSTYPE}"/>
+
+   <target name="targets">
+      <echo message="Targets are clean, prepare, build.server, execute.server, build.client, execute.client, generate.example.jar, generate.httpclient.jar, targets"/>
+      <echo message="base directory is: ${basedir}"/>
+      <echo message="execute sample with: java -cp classes Ser321.http.client.BrowserStudent" />
+      <echo message="execute your client with: java -cp classes Ser321.http.client.Browser http://${server.host}:${port.num}/(YOUR DIRECTORY GOES HERE)"/>
+      <echo message="execute your server with: java -cp classes Ser321.http.server.HttpTCPServer ${port.num}"/>
+      <echo message="execute grader client with: java -jar ${lib.dir}/HttpClient.jar ${server.host} ${port.num} (YOUR DIRECTORY GOES HERE)"/>
+   </target>
+
+   <path id="compile.classpath">
+      <pathelement location="${classes.dir}"/>
+   </path>
+
+   <target name="clean">
+      <delete dir="${classes.dir}" failonerror="false"/>
+      <delete dir="log" failonerror="false"/>
+      <delete dir="Cache" failonerror="false"/>
+   </target>
+
+   <target name="prepare">
+      <mkdir dir="${classes.dir}"/>
+      <mkdir dir="log"/>
+      <mkdir dir="Cache"/>
+   </target>
+
+   <target name="build.server" depends="prepare"
+          description="Compile Java client sources">
+     <!-- Compile Java classes as necessary -->
+     <echo message="execute server: java -cp classes Ser321.http.server.HttpTCPServer ${port.num}"/>
+     <javac srcdir="${src.dir}/server"
+            destdir="${classes.dir}"
+            includeantruntime="false">
+        <classpath refid="compile.classpath"/>
+     </javac>
+   </target>
+   <target name="execute.server" depends="build.server"
+           description="Run the program">
+         <echo message="command line execute: java -cp classes Ser321.http.server.HttpTCPServer" />
+         <java classname="Ser321.http.server.HttpTCPServer" fork="yes">
+           <classpath refid="compile.classpath"/>
+           <arg value="${port.num}"/>
+         </java>
+   </target>
+   <target name="build.client" depends="prepare"
+          description="Compile Java client sources">
+     <!-- Compile Java classes as necessary -->
+      <echo message="java client: java -cp classes Ser321.http.client.HttpClient ${server.host} ${port.num} (YOUR DIRECTORY GOES HERE)" />
+     <javac srcdir="${src.dir}/client"
+            destdir="${classes.dir}"
+            includeantruntime="false">
+        <classpath refid="compile.classpath"/>
+     </javac>
+   </target>
+   <target name="execute.client" depends="build.client"
+           description="Run the program">
+         <echo message="command line execute: java -cp classes Ser321.http.client.HttpClient" />
+         <java classname="Ser321.http.client.HttpClient" fork="yes">
+           <classpath refid="compile.classpath"/>
+           <arg value=""/>
+         </java>
+   </target>
+
+   <target name="execute.sample" depends="build.client">
+     <java classname="Ser321.http.client.BrowserStudent" fork="yes"
+           dir="${basedir}">
+       <classpath refid="compile.classpath"/>
+     </java>
+   </target>
+
+   <target name="generate.example.jar" depends="prepare"
+           description="generate jar of example project for students">
+     <jar destfile="${lib.dir}/assign6Sample.jar">
+            <fileset dir="../" includes="Assign6/build.xml,Assign6/readme.txt,Assign6/TreeDemoHelp.html,Assign6/www/*,Assign6/www/*/*,Assign6/www/*/*/*,Assign6/www/*/*/*/*,Assign6/src/client/BrowserStudent.java,Assign6/src/client/BrowserGUI.java"/>
+     </jar>
+   </target>
+
+   <target name="generate.httpclient.jar" depends="build.client"
+           description="create executable jar for grader.">
+      <jar destfile="${lib.dir}/HttpClient.jar" manifest="manifestHttpClient.txt">
+         <fileset dir="classes" includes="Ser321/http/client/**" />
+      </jar>
+   </target>
+
+</project>
+
